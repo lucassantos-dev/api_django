@@ -17,7 +17,9 @@ SECRET_KEY = getenv("DJANGO_SECRET_KEY", get_random_secret_key())
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+ALLOWED_HOSTS = getenv(
+    "DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost,0.0.0.0,192.168.1.54"
+).split(",")
 
 
 # Application definition
@@ -33,6 +35,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "users",
     "djoser",
+    "sslserver",
 ]
 
 MIDDLEWARE = [
@@ -129,7 +132,7 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
-    "SET_USERNAME_RETYPE": True,
+    # "SET_USERNAME_RETYPE": True,
     "TOKEN_MODEL": None,
 }
 
@@ -141,7 +144,8 @@ AUTH_COOKIE_PATH = "/"
 AUTH_COOKIE_SAMESITE = "None"
 
 CORS_ALLOWED_ORIGINS = getenv(
-    "CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000,http://0.0.0.0:3000",
 ).split(",")
 CORS_ALLOW_CREDENTIALS = True
 

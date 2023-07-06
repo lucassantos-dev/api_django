@@ -14,6 +14,11 @@ django-cors-headers = "^4.1.0"
 python-dotenv = "^1.0.0"
 django = "^4.2.3"
 pillow = "^10.0.0"
+django-extensions = "^3.2.3"
+werkzeug = "^2.3.6"
+django-werkzeug-debugger-runserver = "^0.3.1"
+django-sslserver = "^0.22"
+gunicorn = "^20.1.0"
 
 
 [build-system]
