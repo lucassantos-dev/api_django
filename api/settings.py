@@ -20,7 +20,7 @@ DEBUG = getenv("DEBUG", "False") == "True"
 ALLOWED_HOSTS = getenv(
     "DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost,0.0.0.0,192.168.1.54"
 ).split(",")
-
+DOWNLOAD_FOLDER = "/home/dev/Documents/files"
 
 # Application definition
 
@@ -35,7 +35,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "users",
     "djoser",
-    "sslserver",
+    "attendants",
+    "protocols",
 ]
 
 MIDDLEWARE = [
