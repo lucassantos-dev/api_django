@@ -6,6 +6,8 @@ from django.db.models import Count
 from datetime import datetime, timedelta
 from .models import Protocol
 from attendants import models as modelsAttendant
+import calendar
+import locale
 
 # Create your views here.
 class ProtocolViewSet(viewsets.ModelViewSet):
@@ -27,9 +29,15 @@ class CallsPerMonthView(APIView):
                     monthly_counts[month] += 1
                 else:
                     monthly_counts[month] = 1
+        
+        # Definir a localidade para português do Brasil (pt_BR)
+        locale.setlocale(locale.LC_TIME, 'pt_BR.utf8')
+        
+        month_names_pt = [calendar.month_name[month].capitalize() for month in range(1, 13)]
+        labels = [month_names_pt[month - 1] for month in range(1, 13) if month in monthly_counts.keys()]
         data = {
-            'labels': list(monthly_counts.keys()),
-            'counts': list(monthly_counts.values())
+            'labels': labels,
+            'counts': [monthly_counts[month] for month in range(1, 13) if month in monthly_counts.keys()]
         }
 
         return Response(data)
