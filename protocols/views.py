@@ -42,6 +42,59 @@ class CallsPerMonthView(APIView):
 
         return Response(data)
     
+class MonthlyComparisonView(APIView):
+    def post(self, request):
+        if 'years' in request.data:
+            years = request.data['years']
+            if years == [] or type(years) != list:
+                return Response('Erro', status='400')
+            else:
+                name = request.data.get('name', None)  # Obtém o valor do campo "name" da requisição
+                # Filtra os protocolos com base nos anos e no nome (se fornecido)
+                protocols = Protocol.objects.all()
+                if name and name not in ['None', 'Todos']:
+                    protocols = protocols.filter(name=name)
+                # Dicionário para contar as ocorrências mensais
+                monthly_counts = {}
+                # Itera sobre os protocolos
+                for protocol in protocols:
+                    start_date = datetime.strptime(protocol.start_date, "%d/%m/%Y %H:%M:%S")
+                    year = start_date.year
+                    if year in years:
+                        month = start_date.month
+                        if year not in monthly_counts:
+                            monthly_counts[year] = {}
+                        if month in monthly_counts[year]:
+                            monthly_counts[year][month] += 1
+                        else:
+                            monthly_counts[year][month] = 1
+
+                # Configura o local para exibição dos nomes dos meses em português
+                locale.setlocale(locale.LC_TIME, 'pt_BR.utf8')
+
+                # Obtém os nomes dos meses em português para uso nos rótulos
+                month_names_pt = [calendar.month_name[month].capitalize() for month in range(1, 13)]
+                labels = [month_names_pt[month - 1] for month in range(1, 13)]
+
+                # Formata os dados no formato esperado pela resposta JSON
+                data = []
+                for year in years:
+                    counts = [monthly_counts.get(int(year), {}).get(month, 0) for month in range(1, 13)]
+                    data.append({
+                        'year': int(year),
+                        'counts': counts
+                    })
+
+                # Constrói a resposta com os rótulos e os dados formatados
+                response_data = {
+                    'labels': labels,
+                    'data': data
+                }
+                return Response(response_data)
+        else:
+            return Response('Erro', status='400')
+
+
 # MEDIA DE ATENDIMENTO DIARIO
 class AverageDailyCallsView(APIView):
     def get(self,request):
@@ -61,7 +114,21 @@ class AverageDailyCallsView(APIView):
 class TopNamesView(APIView):
     def get(self, request):
         top_names = Protocol.objects.values('name').annotate(count=Count('name')).order_by('-count')[:10]
-        data = [{'name': entry['name'], 'count': entry['count']} for entry in top_names]
+        data = [{'labels': entry['name'], 'counts': entry['count']} for entry in top_names]
+        return Response(data)
+
+class NamesOrderView(APIView):
+    def get(self, request):
+        # Consulta os nomes e realiza a contagem de ocorrências com filtro
+        top_names = (
+            Protocol.objects.values('name')
+            .annotate(count=Count('name'))
+            .filter(count__gt=10)  # Filtro para contagem maior que 10
+            .order_by('-count')
+        )
+        # Formata os dados no formato esperado pela resposta JSON
+        data = [{'id': 0, 'name': 'Todos'}] + [{'id': idx, 'name': entry['name']} for idx, entry in enumerate(top_names, start=1)]
+        # Retorna os dados como resposta JSON
         return Response(data)
 
 # TOP PROTOCOLOS POR ATENDENTES
@@ -73,7 +140,7 @@ class ProtocolCountByAttendantView(APIView):
             .annotate(count=Count('attendant__name'))
             .order_by('-count')
         )
-        data = [{'attendant': entry['attendant__name'], 'count': entry['count']} for entry in protocol_counts]
+        data = [{'labels': entry['attendant__name'], 'counts': entry['count']} for entry in protocol_counts]
         return Response(data)
     
 # MEDIA DE ATENDIMENTOS POR ATENDENTE
@@ -85,13 +152,13 @@ class AverageCallsPerAttendantView(APIView):
         for attendant in attendants:
             calls_count = Protocol.objects.filter(attendant=attendant).count()
             average_calls.append({
-                'attendant': attendant.name,
-                'average_calls': calls_count
+                'labels': attendant.name,
+                'counts': calls_count
             })
 
         return Response(average_calls)
     
-#TOP PROTOCOLOS POR DEPARTAMENTO
+# TOP PROTOCOLOS POR DEPARTAMENTO
 class ProtocolCountByDepartmentView(APIView):
     def get(self, request):
         protocol_counts = (
@@ -100,11 +167,11 @@ class ProtocolCountByDepartmentView(APIView):
             .annotate(count=Count('department'))
             .order_by('-count')
         )
-        data = [{'department': entry['department'], 'count': entry['count']} for entry in protocol_counts]
+        data = [{'labels': entry['department'], 'counts': entry['count']} for entry in protocol_counts]
         return Response(data)
 #--
 
-#TOPS TAG  
+# TOPS TAG  
 class ProtocolCountByTagView(APIView):
     def get(self, request):
         protocol_counts = (
@@ -140,7 +207,6 @@ class MonthlyTopTagView(APIView):
                     if tag != 'nan':
                         if month not in monthly_top_tags:
                             monthly_top_tags[month] = {}
-
                         if tag not in monthly_top_tags[month]:
                             monthly_top_tags[month][tag] = 1
                         else:
@@ -171,7 +237,6 @@ class AverageWaitingTimeView(APIView):
 
         return Response({'average_waiting_time': str(average_waiting_time)})    
     
-
 #tempo medio de espera por atendente 
 class AverageWaitingTimeByAttendantView(APIView):
     def get(self, request):
