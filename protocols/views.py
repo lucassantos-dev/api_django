@@ -24,7 +24,6 @@ class CallsPerMonthView(APIView):
             start_date = datetime.strptime(protocol.start_date, "%d/%m/%Y %H:%M:%S")
             if start_date.year == current_year:
                 month = start_date.month
-
                 if month in monthly_counts:
                     monthly_counts[month] += 1
                 else:
