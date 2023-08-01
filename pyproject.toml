@@ -20,6 +20,7 @@ django-werkzeug-debugger-runserver = "^0.3.1"
 django-sslserver = "^0.22"
 gunicorn = "^20.1.0"
 pandas = "^2.0.3"
+drf-yasg = "^1.21.7"
 
 
 [build-system]

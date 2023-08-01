@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "djoser",
     "attendants",
     "protocols",
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -70,7 +71,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "api.wsgi.application"
 
-
+SWAGGER_SETTINGS = {
+    'DEFAULT_AUTO_SCHEMA_CLASS': 'drf_yasg.inspectors.SwaggerAutoSchema',
+}
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
@@ -133,6 +136,9 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
+    'SERIALIZERS': {
+        'user': 'users.serializers.CustomUserSerializer',
+    },
     # "SET_USERNAME_RETYPE": True,
     "TOKEN_MODEL": None,
 }

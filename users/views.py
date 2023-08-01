@@ -2,21 +2,20 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from djoser.views import UserViewSet
+from .serializers import CustomUserSerializer
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
     TokenVerifyView,
 )
-
 class CustomTokenObtainPairView(TokenObtainPairView):
 
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
-
         if response.status_code == 200:
             access_token = response.data.get("access")
             refresh_token = response.data.get("refresh")
-
             response.set_cookie(
                 "access",
                 access_token,
@@ -42,12 +41,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh")
-
         if refresh_token:
             request.data["refresh"] = refresh_token
 
         response = super().post(request, *args, **kwargs)
-
         if response.status_code == 200:
             access_token = response.data.get("access")
 
@@ -67,10 +64,8 @@ class CustomTokenRefreshView(TokenRefreshView):
 class CustomTokenVerifyView(TokenVerifyView):
     def post(self, request, *args, **kwargs):
         access_token = request.COOKIES.get("access")
-
         if access_token:
             request.data["token"] = access_token
-
         return super().post(request, *args, **kwargs)
 
 
@@ -79,5 +74,22 @@ class LogoutView(APIView):
         response = Response(status=status.HTTP_204_NO_CONTENT)
         response.delete_cookie("access")
         response.delete_cookie("refresh")
-
         return response
+
+class CustomUserViewSet(UserViewSet):
+    serializer_class = CustomUserSerializer
+    def perform_create(self, serializer):
+        avatar = self.request.FILES.get('avatar') 
+        serializer.save(avatar=avatar)
+
+import base64
+
+
+class CurrentUserView(APIView):
+    def get(self, request):
+        user = request.user
+        if user.avatar and user.avatar.path:
+            with open(user.avatar.path, 'rb') as avatar_file:
+                encoded_avatar = base64.b64encode(avatar_file.read()).decode('utf-8')
+            return Response({"avatar": encoded_avatar})
+        return Response({"message": "Usuário não possui avatar ou arquivo inexistente."}, status=204)
