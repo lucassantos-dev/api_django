@@ -15,7 +15,8 @@ class Protocol(models.Model):
     first_waiting_time = models.DurationField(null=True, blank=True)
     average_waiting_time = models.DurationField(null=True, blank=True)
     call_type = models.CharField(max_length=50)
-
+    type_first_message = models.CharField(max_length=255)
+    is_business_hours = models.BooleanField()
     def __str__(self):
         return self.number_protocol
 
