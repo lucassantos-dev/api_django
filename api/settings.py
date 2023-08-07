@@ -5,7 +5,7 @@ from django.core.management.utils import get_random_secret_key
 
 # Define o caminho da pasta raiz do projeto
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+ROOT_URLCONF = 'api.urls'
 # Carrega as variáveis de ambiente a partir do arquivo .env.local
 dotenv_file = BASE_DIR / ".env.local"
 if path.isfile(dotenv_file):

@@ -10,12 +10,12 @@ schema_view = get_schema_view(
         title="Api Dashboard Protocolos Tax",
         default_version='v1',
         description="",
-        terms_of_service="https://www.suaapi.com/terms/",
-        contact=openapi.Contact(email="contato@suaapi.com"),
-        license=openapi.License(name="Licença da sua API"),
+        # terms_of_service="https://www.suaapi.com/terms/",
+        # contact=openapi.Contact(email="contato@suaapi.com"),
+        # license=openapi.License(name="Licença da sua API"),   
     ),
     public=True,
-    permission_classes=(permissions.AllowAny,),
+    permission_classes=(permissions.AllowAny),
 )
 
 
